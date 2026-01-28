@@ -1,12 +1,34 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 
-const Loader = () => {
-    return (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
-            <Loader2 className="animate-spin" size={32} color="var(--primary)" />
+const Loader = ({ fullScreen, size = 32 }) => {
+    const loaderContent = (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: fullScreen ? '0' : '2rem' }}>
+            <Loader2 className="animate-spin" size={size} color="var(--primary)" />
         </div>
     );
+
+    if (fullScreen) {
+        return (
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                background: 'rgba(15, 23, 42, 0.7)',
+                backdropFilter: 'blur(4px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 9999
+            }}>
+                {loaderContent}
+            </div>
+        );
+    }
+
+    return loaderContent;
 };
 
 export default Loader;

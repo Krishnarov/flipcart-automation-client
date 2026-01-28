@@ -1,127 +1,96 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, AlertCircle, CheckCircle2, FileSpreadsheet } from 'lucide-react';
-import { uploadExcel, getJobs } from '../api/automation.api.js';
+import { useNavigate } from 'react-router-dom';
+import { ShoppingCart, PackageX, History } from 'lucide-react';
+import { getStats, getJobs } from '../api/automation.api.js';
 import JobItem from '../components/JobItem';
+import toast from 'react-hot-toast';
+import Loader from '../components/common/Loader';
 
 const Dashboard = () => {
-    const [file, setFile] = useState(null);
+    const navigate = useNavigate();
+    const [stats, setStats] = useState({ purchaseCount: 0, cancelCount: 0 });
     const [jobs, setJobs] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState(null);
+    const [initLoading, setInitLoading] = useState(true);
 
-    const fetchJobs = async () => {
+    const fetchData = async (silent = false) => {
         try {
-            const { data } = await getJobs();
-            setJobs(data);
+            const [statsRes, jobsRes] = await Promise.all([
+                getStats(),
+                getJobs()
+            ]);
+            setStats(statsRes.data);
+            setJobs(jobsRes.data);
         } catch (error) {
-            console.error('Error fetching jobs');
+            if (!silent) toast.error('Error fetching dashboard data');
+            console.error('Error fetching dashboard data');
+        } finally {
+            if (initLoading) setInitLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchJobs();
-        const interval = setInterval(fetchJobs, 5000); // Poll every 5s
+        fetchData();
+        const interval = setInterval(() => fetchData(true), 5000);
         return () => clearInterval(interval);
     }, []);
 
-    const handleUpload = async (e) => {
-        e.preventDefault();
-        if (!file) return;
-
-        setLoading(true);
-        const formData = new FormData();
-        formData.append('file', file);
-
-        try {
-            await uploadExcel(formData);
-            setMessage({ type: 'success', text: 'File uploaded successfully!' });
-            setFile(null);
-            fetchJobs();
-        } catch (error) {
-            setMessage({ type: 'error', text: 'Upload failed. Please try again.' });
-        } finally {
-            setLoading(false);
-            setTimeout(() => setMessage(null), 3000);
-        }
-    };
-
     return (
         <div className="container">
-            <div className="dashboard-grid">
-                {/* Upload Section */}
-                <div className="glass-card" style={{ height: 'fit-content' }}>
-                    <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <Upload size={24} color="var(--primary)" /> New Automation
-                    </h2>
+            <h1 style={{ marginBottom: '2rem' }}>Dashboard Overview</h1>
 
-                    <form onSubmit={handleUpload}>
-                        <div
-                            style={{
-                                border: '2px dashed var(--border)',
-                                borderRadius: '1rem',
-                                padding: '2rem',
-                                textAlign: 'center',
-                                marginBottom: '1.5rem',
-                                cursor: 'pointer',
-                                background: file ? 'rgba(37, 99, 235, 0.05)' : 'none'
-                            }}
-                            onClick={() => document.getElementById('file-input').click()}
-                        >
-                            <input
-                                id="file-input"
-                                type="file"
-                                hidden
-                                accept=".xlsx, .xls"
-                                onChange={(e) => setFile(e.target.files[0])}
-                            />
-                            <FileSpreadsheet size={40} style={{ marginBottom: '1rem', opacity: 0.5 }} />
-                            <p style={{ color: 'var(--text-muted)' }}>
-                                {file ? file.name : "Click to select Excel file"}
-                            </p>
+            <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
+                <div
+                    className="glass-card stat-card"
+                    onClick={() => navigate('/product-purchase')}
+                    style={{ cursor: 'pointer', transition: 'transform 0.2s', borderLeft: '4px solid var(--primary)' }}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Total Purchased</p>
+                            <h2 style={{ fontSize: '2.5rem', fontWeight: 700 }}>{stats.purchaseCount}</h2>
                         </div>
-
-                        <button
-                            type="submit"
-                            className="btn-primary"
-                            style={{ width: '100%' }}
-                            disabled={!file || loading}
-                        >
-                            {loading ? 'Uploading...' : 'Upload & Prepare'}
-                        </button>
-                    </form>
-
-                    {message && (
-                        <div style={{
-                            marginTop: '1rem',
-                            padding: '1rem',
-                            borderRadius: '0.5rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                            background: message.type === 'success' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                            color: message.type === 'success' ? '#4ade80' : '#f87171'
-                        }}>
-                            {message.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
-                            {message.text}
+                        <div style={{ background: 'rgba(37, 99, 235, 0.1)', padding: '15px', borderRadius: '50%' }}>
+                            <ShoppingCart size={32} color="var(--primary)" />
                         </div>
-                    )}
+                    </div>
                 </div>
 
-                {/* Jobs List Section */}
-                <div>
-                    <h2 style={{ marginBottom: '1.5rem' }}>Recent Jobs</h2>
-                    {jobs.length === 0 ? (
-                        <div className="glass-card" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                            No jobs uploaded yet.
+                <div
+                    className="glass-card stat-card"
+                    onClick={() => navigate('/order-cancel')}
+                    style={{ cursor: 'pointer', transition: 'transform 0.2s', borderLeft: '4px solid var(--error)' }}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Total Cancelled</p>
+                            <h2 style={{ fontSize: '2.5rem', fontWeight: 700 }}>{stats.cancelCount}</h2>
                         </div>
-                    ) : (
-                        jobs.map(job => (
-                            <JobItem key={job._id} job={job} onStatusUpdate={fetchJobs} />
-                        ))
-                    )}
+                        <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '15px', borderRadius: '50%' }}>
+                            <PackageX size={32} color="var(--error)" />
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div >
+
+            <div style={{ marginTop: '2rem' }}>
+                <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <History size={24} color="var(--primary)" /> Recent Activity
+                </h2>
+                {initLoading ? (
+                    <Loader />
+                ) : jobs.length === 0 ? (
+                    <div className="glass-card" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '3rem' }}>
+                        No automation jobs found.
+                    </div>
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        {jobs.map(job => (
+                            <JobItem key={job._id} job={job} onStatusUpdate={() => fetchData(true)} />
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
     );
 };
 

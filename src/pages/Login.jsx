@@ -1,27 +1,35 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Mail, Loader2 } from 'lucide-react';
+import { Lock, Mail } from 'lucide-react';
 import { loginUser } from '../api/automation.api.js';
+import toast from 'react-hot-toast';
+import Loader from '../components/common/Loader';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
+
+        const loginPromise = loginUser({ email, password });
+
+        toast.promise(loginPromise, {
+            loading: 'Logging in...',
+            success: 'Welcome back!',
+            error: (err) => err.response?.data?.message || 'Login failed',
+        });
 
         try {
-            const { data } = await loginUser({ email, password });
+            const { data } = await loginPromise;
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
             navigate('/dashboard');
         } catch (err) {
-            setError(err.response?.data?.message || 'Login failed');
+            console.error('Login error');
         } finally {
             setLoading(false);
         }
@@ -41,18 +49,6 @@ const Login = () => {
                     <p style={{ color: 'var(--text-muted)' }}>Login to manage your automations</p>
                 </div>
 
-                {error && (
-                    <div style={{
-                        padding: '0.75rem',
-                        borderRadius: '0.5rem',
-                        background: 'rgba(239, 68, 68, 0.1)',
-                        color: '#f87171',
-                        marginBottom: '1.5rem',
-                        fontSize: '0.875rem'
-                    }}>
-                        {error}
-                    </div>
-                )}
 
                 <form onSubmit={handleSubmit}>
                     <div style={{ marginBottom: '1.25rem' }}>
@@ -107,7 +103,7 @@ const Login = () => {
                         style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
                         disabled={loading}
                     >
-                        {loading ? <Loader2 className="animate-spin" size={20} /> : 'Login System'}
+                        {loading ? <Loader size={20} /> : 'Login System'}
                     </button>
                 </form>
             </div>

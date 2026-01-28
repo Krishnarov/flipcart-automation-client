@@ -16,12 +16,16 @@ api.interceptors.request.use((config) => {
 export const loginUser = (data) => api.post('/auth/login', data);
 export const registerUser = (data) => api.post('/auth/register', data);
 
-export const uploadExcel = (formData) => api.post('/upload', formData, {
-  headers: { 'Content-Type': 'multipart/form-data' },
-});
+export const uploadExcel = (formData, type = 'purchase') => {
+  formData.append('type', type);
+  return api.post('/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
 
-export const getJobs = () => api.get('/report/jobs');
+export const getJobs = (type = '') => api.get(`/report/jobs${type ? `?type=${type}` : ''}`);
 export const getJobTasks = (jobId) => api.get(`/report/jobs/${jobId}`);
+export const getStats = () => api.get('/report/stats');
 export const startJob = (jobId) => api.post(`/automation/start/${jobId}`);
 
 export default api;

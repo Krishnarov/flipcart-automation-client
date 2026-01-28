@@ -1,14 +1,18 @@
 import React from 'react';
-import { Play, ClipboardCheck, Clock, FileSpreadsheet } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Play, ClipboardCheck, Clock, FileSpreadsheet, Eye } from 'lucide-react';
 import { startJob } from '../api/automation.api.js';
+import toast from 'react-hot-toast';
 
 const JobItem = ({ job, onStatusUpdate }) => {
     const handleStart = async () => {
+        const loadingToast = toast.loading('Starting job...');
         try {
             await startJob(job._id);
+            toast.success('Job started successfully!', { id: loadingToast });
             onStatusUpdate();
         } catch (error) {
-            alert('Failed to start job');
+            toast.error('Failed to start job', { id: loadingToast });
         }
     };
 
@@ -23,12 +27,29 @@ const JobItem = ({ job, onStatusUpdate }) => {
                     <FileSpreadsheet size={24} color="var(--primary)" />
                 </div>
                 <div>
-                    <h4 style={{ fontSize: '1.1rem', marginBottom: '4px' }}>{job.uploadFile.split('/').pop()}</h4>
-                    <div style={{ display: 'flex', gap: '15px', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Clock size={14} /> {new Date(job.createdAt).toLocaleString()}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>{job.uploadFile.split('/').pop()}</div>
+                        <span style={{
+                            fontSize: '0.65rem',
+                            padding: '1px 6px',
+                            borderRadius: '10px',
+                            fontWeight: 700,
+                            textTransform: 'uppercase',
+                            background: job.type === 'cancel' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(37, 99, 235, 0.1)',
+                            color: job.type === 'cancel' ? 'var(--error)' : 'var(--primary)',
+                            border: `1px solid ${job.type === 'cancel' ? 'var(--error)' : 'var(--primary)'}`
+                        }}>
+                            {job.type === 'cancel' ? 'Cancellation' : 'Purchase'}
                         </span>
-                        <span className={getStatusClass(job.status)}>{job.status}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <Link to={`/reports/${job._id}`} className="btn-secondary" style={{ padding: '4px 12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <Eye size={14} /> View Report
+                        </Link>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                            <Clock size={12} /> {new Date(job.createdAt).toLocaleString()}
+                        </span>
+                        <span className={getStatusClass(job.status)} style={{ fontSize: '0.75rem', padding: '2px 8px' }}>{job.status}</span>
                     </div>
                 </div>
             </div>

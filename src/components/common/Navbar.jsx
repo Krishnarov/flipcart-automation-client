@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FileText, LogOut } from 'lucide-react';
+import { LayoutDashboard, FileText, LogOut, PackageX, ShoppingCart } from 'lucide-react';
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -22,6 +22,16 @@ const Navbar = () => {
                 <li>
                     <Link to="/dashboard">
                         <LayoutDashboard size={18} style={{ marginBottom: '-3px', marginRight: '5px' }} /> Dashboard
+                    </Link>
+                </li>
+                <li>
+                    <Link to="/product-purchase">
+                        <ShoppingCart size={18} style={{ marginBottom: '-3px', marginRight: '5px' }} /> Purchase
+                    </Link>
+                </li>
+                <li>
+                    <Link to="/order-cancel">
+                        <PackageX size={18} style={{ marginBottom: '-3px', marginRight: '5px' }} /> Cancel
                     </Link>
                 </li>
                 <li>
