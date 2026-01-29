@@ -7,6 +7,7 @@ import Loader from '../components/common/Loader';
 
 const Reports = () => {
     const { jobId } = useParams();
+    const [reportType, setReportType] = useState('purchase');
     const [jobs, setJobs] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [selectedJobId, setSelectedJobId] = useState(jobId || '');
@@ -16,20 +17,22 @@ const Reports = () => {
     useEffect(() => {
         const fetchJobs = async () => {
             try {
-                const { data } = await getJobs();
+                const { data } = await getJobs(reportType);
                 setJobs(data);
-                if (!selectedJobId && data.length > 0) {
+                if (data.length > 0) {
                     setSelectedJobId(data[0]._id);
+                } else {
+                    setSelectedJobId('');
+                    setTasks([]);
                 }
             } catch (error) {
                 toast.error('Error fetching jobs');
-                console.error('Error fetching jobs');
             } finally {
                 setJobsLoading(false);
             }
         };
         fetchJobs();
-    }, []);
+    }, [reportType]);
 
     useEffect(() => {
         if (selectedJobId) {
@@ -40,7 +43,6 @@ const Reports = () => {
                     setTasks(data);
                 } catch (error) {
                     toast.error('Error fetching tasks');
-                    console.error('Error fetching tasks');
                 } finally {
                     setLoading(false);
                 }
@@ -48,6 +50,36 @@ const Reports = () => {
             fetchTasks();
         }
     }, [selectedJobId]);
+
+    const exportToCSV = () => {
+        if (tasks.length === 0) return;
+
+        const job = jobs.find(j => j._id === selectedJobId);
+        const headers = job.type === 'cancel'
+            ? ['Email', 'Order ID', 'Status', 'Reason']
+            : ['Email', 'Name', 'Phone', 'Pincode', 'City', 'State', 'Product Link', 'Status', 'Reason'];
+
+        const csvRows = [
+            headers.join(','),
+            ...tasks.map(t => {
+                if (job.type === 'cancel') {
+                    return [t.email, t.orderId, t.status, t.reason].map(v => `"${v || ''}"`).join(',');
+                } else {
+                    return [t.email, t.name, t.phone, t.pincode, t.city, t.state, t.productlink, t.status, t.reason].map(v => `"${v || ''}"`).join(',');
+                }
+            })
+        ];
+
+        const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('hidden', '');
+        a.setAttribute('href', url);
+        a.setAttribute('download', `report-${selectedJobId}.csv`);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
 
     const getStatusStyle = (status) => {
         switch (status) {
@@ -58,7 +90,24 @@ const Reports = () => {
     };
 
     return (
-        <div className="container">
+        <div style={{ padding: "20px" }}>
+            <div style={{ display: 'flex', gap: '20px', marginBottom: '2rem' }}>
+                <button
+                    className={`btn-${reportType === 'purchase' ? 'primary' : 'secondary'}`}
+                    onClick={() => setReportType('purchase')}
+                    style={{ flex: 1 }}
+                >
+                    Purchase Reports
+                </button>
+                <button
+                    className={`btn-${reportType === 'cancel' ? 'primary' : 'secondary'}`}
+                    onClick={() => setReportType('cancel')}
+                    style={{ flex: 1, color: 'white', background: reportType === 'cancel' ? 'var(--error)' : 'var(--glass)' }}
+                >
+                    Cancellation Reports
+                </button>
+            </div>
+
             <div className="dashboard-grid">
                 {/* Job Selection Sidebar */}
                 <div className="glass-card" style={{ height: 'fit-content', minHeight: '200px' }}>
@@ -90,9 +139,16 @@ const Reports = () => {
 
                 {/* Tasks View */}
                 <div>
-                    <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        Automation Logs <ChevronRight size={20} opacity={0.5} /> {tasks.length} Tasks
-                    </h2>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                        <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            Automation Logs <ChevronRight size={20} opacity={0.5} /> {tasks.length} Tasks
+                        </h2>
+                        {tasks.length > 0 && (
+                            <button className="btn-secondary" onClick={exportToCSV} style={{ padding: '8px 16px', fontSize: '0.8rem' }}>
+                                Export to CSV
+                            </button>
+                        )}
+                    </div>
 
                     {loading ? (
                         <div className="glass-card" style={{ padding: '4rem' }}><Loader size={48} /></div>

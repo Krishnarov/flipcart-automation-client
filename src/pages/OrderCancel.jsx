@@ -55,16 +55,26 @@ const OrderCancel = () => {
     };
 
     return (
-        <div className="container">
+        <div style={{ padding: "20px" }}>
             <h1 style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <PackageX size={32} color="var(--error)" /> Order Cancellation
             </h1>
 
             <div className="dashboard-grid">
                 <div className="glass-card" style={{ height: 'fit-content' }}>
-                    <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <Upload size={24} color="var(--primary)" /> Upload Excel
-                    </h2>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                        <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Upload size={24} color="var(--primary)" /> Upload Excel
+                        </h2>
+                        <button
+                            type="button"
+                            className="btn-secondary"
+                            style={{ backgroundColor: "transparent", color: "blue", fontWeight: "bold", textDecoration: "underline" }}
+                            onClick={() => window.open('cancelOrderSample.xlsx')}
+                        >
+                            Download Sample
+                        </button>
+                    </div>
 
                     <form onSubmit={handleUpload}>
                         <div

@@ -35,7 +35,7 @@ const Dashboard = () => {
     }, []);
 
     return (
-        <div className="container">
+        <div style={{ padding: "20px" }}>
             <h1 style={{ marginBottom: '2rem' }}>Dashboard Overview</h1>
 
             <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
