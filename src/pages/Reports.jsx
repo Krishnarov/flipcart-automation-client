@@ -57,7 +57,7 @@ const Reports = () => {
         const job = jobs.find(j => j._id === selectedJobId);
         const headers = job.type === 'cancel'
             ? ['Email', 'Order ID', 'Status', 'Reason']
-            : ['Email', 'Name', 'Phone', 'Pincode', 'City', 'State', 'Product Link', 'Status', 'Reason'];
+            : ['Email', 'Name', 'Phone', 'Pincode', 'City', 'State', 'Product Link', "Order ID", 'Status', 'Reason'];
 
         const csvRows = [
             headers.join(','),
@@ -65,7 +65,7 @@ const Reports = () => {
                 if (job.type === 'cancel') {
                     return [t.email, t.orderId, t.status, t.reason].map(v => `"${v || ''}"`).join(',');
                 } else {
-                    return [t.email, t.name, t.phone, t.pincode, t.city, t.state, t.productlink, t.status, t.reason].map(v => `"${v || ''}"`).join(',');
+                    return [t.email, t.name, t.phone, t.pincode, t.city, t.state, t.productlink, t.orderId, t.status, t.reason].map(v => `"${v || ''}"`).join(',');
                 }
             })
         ];
