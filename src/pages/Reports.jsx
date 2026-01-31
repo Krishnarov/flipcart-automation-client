@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { ChevronRight, ExternalLink } from 'lucide-react';
-import { getJobs, getJobTasks } from '../api/automation.api.js';
+import { ChevronRight, ExternalLink, RotateCw } from 'lucide-react';
+import { getJobs, getJobTasks, retryJob, retryTask } from '../api/automation.api.js';
 import toast from 'react-hot-toast';
 import Loader from '../components/common/Loader';
 
@@ -50,6 +50,25 @@ const Reports = () => {
             fetchTasks();
         }
     }, [selectedJobId]);
+
+    const handleRetryJob = async () => {
+        if (!selectedJobId) return;
+        try {
+            const { data } = await retryJob(selectedJobId);
+            toast.success(data.message);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Error retrying job');
+        }
+    };
+
+    const handleRetryTask = async (taskId) => {
+        try {
+            const { data } = await retryTask(taskId, reportType);
+            toast.success(data.message);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Error retrying task');
+        }
+    };
 
     const exportToCSV = () => {
         if (tasks.length === 0) return;
@@ -144,9 +163,16 @@ const Reports = () => {
                             Automation Logs <ChevronRight size={20} opacity={0.5} /> {tasks.length} Tasks
                         </h2>
                         {tasks.length > 0 && (
-                            <button className="btn-secondary" onClick={exportToCSV} style={{ padding: '8px 16px', fontSize: '0.8rem' }}>
-                                Export to CSV
-                            </button>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                {tasks.some(t => t.status === 'failed') && (
+                                    <button className="btn-secondary" onClick={handleRetryJob} style={{ padding: '8px 16px', fontSize: '0.8rem', background: 'rgba(239, 68, 68, 0.1)', color: '#f87171', border: '1px solid #f87171' }}>
+                                        <RotateCw size={14} style={{ marginRight: '5px' }} /> Retry All Failed
+                                    </button>
+                                )}
+                                <button className="btn-secondary" onClick={exportToCSV} style={{ padding: '8px 16px', fontSize: '0.8rem' }}>
+                                    Export to CSV
+                                </button>
+                            </div>
                         )}
                     </div>
 
@@ -202,7 +228,17 @@ const Reports = () => {
                                                 </>
                                             )}
                                             <td style={{ padding: '15px', fontWeight: 600, ...getStatusStyle(task.status) }}>
-                                                {task.status.toUpperCase()}
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    {task.status.toUpperCase()}
+                                                    {task.status === 'failed' && (
+                                                        <RotateCw
+                                                            size={14}
+                                                            style={{ cursor: 'pointer', color: 'var(--primary)' }}
+                                                            onClick={() => handleRetryTask(task._id)}
+                                                            title="Retry Task"
+                                                        />
+                                                    )}
+                                                </div>
                                             </td>
                                             <td style={{ padding: '15px', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
                                                 {task.reason || '--'}

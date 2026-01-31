@@ -27,5 +27,7 @@ export const getJobs = (type = '') => api.get(`/report/jobs${type ? `?type=${typ
 export const getJobTasks = (jobId) => api.get(`/report/jobs/${jobId}`);
 export const getStats = () => api.get('/report/stats');
 export const startJob = (jobId) => api.post(`/automation/start/${jobId}`);
+export const retryJob = (jobId) => api.post(`/automation/retry-job/${jobId}`);
+export const retryTask = (taskId, type) => api.post(`/automation/retry-task/${taskId}?type=${type}`);
 
 export default api;

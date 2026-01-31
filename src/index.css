@@ -60,6 +60,18 @@ button {
   transform: translateY(-1px);
 }
 
+.btn-secondary {
+  background-color: var(--glass);
+  color: var(--text);
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
 .navbar {
   display: flex;
   justify-content: space-between;
