@@ -1,9 +1,9 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 
-const Loader = ({ fullScreen, size = 32 }) => {
+const Loader = ({ fullScreen, size }) => {
     const loaderContent = (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: fullScreen ? '0' : '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: fullScreen ? '0' : '1rem' }}>
             <Loader2 className="animate-spin" size={size} color="var(--primary)" />
         </div>
     );

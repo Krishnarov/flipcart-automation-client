@@ -29,5 +29,7 @@ export const getStats = () => api.get('/report/stats');
 export const startJob = (jobId) => api.post(`/automation/start/${jobId}`);
 export const retryJob = (jobId) => api.post(`/automation/retry-job/${jobId}`);
 export const retryTask = (taskId, type) => api.post(`/automation/retry-task/${taskId}?type=${type}`);
+export const stopJob = (jobId) => api.post(`/automation/stop/${jobId}`);
+export const updateTaskReason = (taskId, type, reason) => api.patch(`/automation/update-reason/${taskId}`, { type, reason });
 
 export default api;

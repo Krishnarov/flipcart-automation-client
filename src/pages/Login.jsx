@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Mail } from 'lucide-react';
+import { Loader2, Lock, Mail } from 'lucide-react';
 import { loginUser } from '../api/automation.api.js';
 import toast from 'react-hot-toast';
-import Loader from '../components/common/Loader';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -103,7 +102,7 @@ const Login = () => {
                         style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
                         disabled={loading}
                     >
-                        {loading ? <Loader size={20} /> : 'Login System'}
+                        {loading ? <Loader2 className="animate-spin" size={20} /> : 'Login System'}
                     </button>
                 </form>
             </div>

@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Play, ClipboardCheck, Clock, FileSpreadsheet, Eye } from 'lucide-react';
-import { startJob } from '../api/automation.api.js';
+import { Play, ClipboardCheck, Clock, FileSpreadsheet, Eye, Square } from 'lucide-react';
+import { startJob, stopJob } from '../api/automation.api.js';
 import toast from 'react-hot-toast';
+import Loader from './common/Loader';
 
 const JobItem = ({ job, onStatusUpdate }) => {
     const handleStart = async () => {
@@ -13,6 +14,17 @@ const JobItem = ({ job, onStatusUpdate }) => {
             onStatusUpdate();
         } catch (error) {
             toast.error('Failed to start job', { id: loadingToast });
+        }
+    };
+
+    const handleStop = async () => {
+        const loadingToast = toast.loading('Stopping job...');
+        try {
+            await stopJob(job._id);
+            toast.success('Stop request sent!', { id: loadingToast });
+            onStatusUpdate();
+        } catch (error) {
+            toast.error('Failed to stop job', { id: loadingToast });
         }
     };
 
@@ -60,10 +72,34 @@ const JobItem = ({ job, onStatusUpdate }) => {
                 </button>
             )}
 
-            {(job.status === 'running' || job.status === 'completed') && (
+            {job.status === 'running' && (
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary)' }}>
+                        <Loader size={20} />
+                        Processing...
+                    </div>
+                    <button className="btn-primary" onClick={handleStop} style={{ background: 'var(--error)', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px' }}>
+                        <Square size={16} fill="white" /> Stop Job
+                    </button>
+                </div>
+            )}
+
+            {job.status === 'completed' && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)' }}>
                     <ClipboardCheck size={20} />
-                    {job.status === 'running' ? 'Processing...' : 'Completed'}
+                    Completed
+                </div>
+            )}
+
+            {job.status === 'stopped' && (
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--error)' }}>
+                        <Square size={20} />
+                        Stopped
+                    </div>
+                    <button className="btn-primary" onClick={handleStart} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px' }}>
+                        <Play size={16} fill="white" /> Resume Job
+                    </button>
                 </div>
             )}
         </div>
